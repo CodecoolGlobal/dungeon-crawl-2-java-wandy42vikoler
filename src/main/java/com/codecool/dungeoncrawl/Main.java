@@ -3,7 +3,10 @@ package com.codecool.dungeoncrawl;
 import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
+import com.codecool.dungeoncrawl.logic.actors.Actor;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -44,6 +47,14 @@ public class Main extends Application {
         Button button = new Button("Pick up item");
         ui.add(button, 0, 2);
         button.setFocusTraversable(false);
+
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                map.getPlayer().addItem();
+                refresh();
+            }
+        });
 
         BorderPane borderPane = new BorderPane();
 
