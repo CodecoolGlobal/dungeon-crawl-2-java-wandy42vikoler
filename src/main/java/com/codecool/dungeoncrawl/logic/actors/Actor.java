@@ -2,12 +2,15 @@ package com.codecool.dungeoncrawl.logic.actors;
 
 import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.Drawable;
+import com.codecool.dungeoncrawl.logic.items.Item;
 
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class Actor implements Drawable {
     private Cell cell;
     private int health = 10;
+    public Set<Item> inventory;
 
     public Actor(Cell cell) {
         this.cell = cell;
@@ -40,5 +43,9 @@ public abstract class Actor implements Drawable {
 
     public int getY() {
         return cell.getY();
+    }
+
+    public Set<Item> getInventory() {
+        return inventory;
     }
 }
