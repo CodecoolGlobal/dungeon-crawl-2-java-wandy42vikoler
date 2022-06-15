@@ -40,6 +40,12 @@ public class MapLoader {
                         case 'f':
                             cell.setType(CellType.TORCH);
                             break;
+                        case 'd':
+                            cell.setType(CellType.CLOSED_DOOR);
+                            break;
+                        case 'o':
+                            cell.setType(CellType.OPEN_DOOR);
+                            break;
                         case 's':
                             cell.setType(CellType.FLOOR);
                             new Skeleton(cell);
