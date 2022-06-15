@@ -53,7 +53,11 @@ public abstract class Actor implements Drawable {
 
     public void addItem() {
         if (cell.getItem() != null) {
-            inventory.add(cell.getItem());
+            if (Objects.equals(cell.getItem().getTileName(), "potion")) {
+                health += 10;
+            } else {
+                inventory.add(cell.getItem());
+            }
             cell.setItem(null);
         }
     }
