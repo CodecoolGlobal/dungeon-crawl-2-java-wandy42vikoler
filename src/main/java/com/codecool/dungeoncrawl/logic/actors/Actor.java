@@ -20,7 +20,8 @@ public abstract class Actor implements Drawable {
 
     public void move(int dx, int dy) {
         Cell nextCell = cell.getNeighbor(dx, dy);
-        if (Objects.equals(nextCell.getTileName(), "wall") || nextCell.getActor() != null){
+        if (Objects.equals(nextCell.getTileName(), "wall") || Objects.equals(nextCell.getTileName(), "torch") ||
+                Objects.equals(nextCell.getTileName(), "window") || nextCell.getActor() != null){
             cell.setActor(this);
         }
         else {
@@ -52,7 +53,11 @@ public abstract class Actor implements Drawable {
 
     public void addItem() {
         if (cell.getItem() != null) {
-            inventory.add(cell.getItem());
+            if (Objects.equals(cell.getItem().getTileName(), "potion")) {
+                health += 10;
+            } else {
+                inventory.add(cell.getItem());
+            }
             cell.setItem(null);
         }
     }

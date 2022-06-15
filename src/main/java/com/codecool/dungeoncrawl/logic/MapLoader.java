@@ -2,6 +2,7 @@ package com.codecool.dungeoncrawl.logic;
 
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import com.codecool.dungeoncrawl.logic.actors.Skeleton;
+import com.codecool.dungeoncrawl.logic.items.HealthPotion;
 import com.codecool.dungeoncrawl.logic.items.Key;
 import com.codecool.dungeoncrawl.logic.items.Sword;
 
@@ -30,8 +31,14 @@ public class MapLoader {
                         case '#':
                             cell.setType(CellType.WALL);
                             break;
+                        case 'W':
+                            cell.setType(CellType.WINDOW);
+                            break;
                         case '.':
                             cell.setType(CellType.FLOOR);
+                            break;
+                        case 'f':
+                            cell.setType(CellType.TORCH);
                             break;
                         case 's':
                             cell.setType(CellType.FLOOR);
@@ -48,6 +55,10 @@ public class MapLoader {
                         case '§':
                             cell.setType(CellType.FLOOR);
                             new Key(cell);
+                            break;
+                        case 'p':
+                            cell.setType(CellType.FLOOR);
+                            new HealthPotion(cell);
                             break;
 
                         default:
