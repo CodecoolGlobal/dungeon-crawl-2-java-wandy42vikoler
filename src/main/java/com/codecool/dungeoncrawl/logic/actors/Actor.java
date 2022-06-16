@@ -31,6 +31,13 @@ public abstract class Actor implements Drawable {
         }
     }
 
+    public void moveMonster(int x, int y){
+        Cell nextCell =  cell.nextPosition(x, y);
+        cell.setActor(null);
+        nextCell.setActor(this);
+        cell = nextCell;
+    }
+
     public int getHealth() {
         return health;
     }

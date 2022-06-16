@@ -1,5 +1,6 @@
 package com.codecool.dungeoncrawl;
 
+import com.codecool.dungeoncrawl.ai.Pathfinding;
 import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
@@ -19,13 +20,16 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+
     GameMap map = MapLoader.loadMap();
+    Pathfinding pathfinder = new Pathfinding(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
             map.getHeight() * Tiles.TILE_WIDTH);
     GraphicsContext context = canvas.getGraphicsContext2D();
     Label healthLabel = new Label();
     Label inventoryLabel = new Label();
+
 
     public static void main(String[] args) {
         launch(args);
@@ -68,8 +72,8 @@ public class Main extends Application {
         primaryStage.setTitle("Dungeon Crawl");
         primaryStage.show();
     }
-
     private void onKeyPressed(KeyEvent keyEvent) {
+
         switch (keyEvent.getCode()) {
             case UP:
                 map.getPlayer().move(0, -1);
@@ -88,7 +92,26 @@ public class Main extends Application {
                 refresh();
                 break;
         }
+        searchPath(map.getPlayer().getX(), map.getPlayer().getY());
     }
+
+    public void searchPath(int goalX, int goalY){
+
+        int startX = map.getMonster().getX();
+        int startY = map.getMonster().getY();
+        pathfinder.setNode(startX, startY, goalX, goalY);
+
+        if(pathfinder.search()){
+            //Next X and Y
+            int nextX = pathfinder.pathList.get(0).x;
+            int nextY = pathfinder.pathList.get(0).y;
+
+            map.getMonster().moveMonster(nextX, nextY);
+        }
+
+    }
+
+
 
     private void refresh() {
         context.setFill(Color.BLACK);

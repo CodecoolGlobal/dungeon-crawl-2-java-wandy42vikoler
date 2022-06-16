@@ -1,5 +1,6 @@
 package com.codecool.dungeoncrawl.logic;
 
+import com.codecool.dungeoncrawl.logic.actors.Monster;
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import com.codecool.dungeoncrawl.logic.actors.Skeleton;
 import com.codecool.dungeoncrawl.logic.items.HealthPotion;
@@ -60,7 +61,10 @@ public class MapLoader {
                             cell.setType(CellType.FLOOR);
                             new HealthPotion(cell);
                             break;
-
+                        case 'm':
+                            cell.setType(CellType.FLOOR);
+                            map.setMonster(new Monster(cell));
+                            break;
                         default:
                             throw new RuntimeException("Unrecognized character: '" + line.charAt(x) + "'");
                     }
