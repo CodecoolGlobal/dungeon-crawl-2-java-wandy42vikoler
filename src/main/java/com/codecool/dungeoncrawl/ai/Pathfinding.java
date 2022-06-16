@@ -78,7 +78,7 @@ public class Pathfinding {
             //Check tiles
             String tileCheck = map.getCell(x, y).getType().getTileName();
             if(Objects.equals(tileCheck, "wall")){
-                node[x][y].solid = true;
+                node[x][y].solid = true; //not implemented, make work
             }
             //Set cost
             getCost(node[x][y]);
