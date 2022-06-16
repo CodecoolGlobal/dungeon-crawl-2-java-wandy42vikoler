@@ -38,6 +38,17 @@ public abstract class Actor implements Drawable {
         }
     }
 
+    public void moveMonster(int x, int y){
+        Cell nextCell =  cell.nextPosition(x, y);
+        if (nextCell.getActor() != null) {
+            cell.setActor(this);
+        } else {
+            cell.setActor(null);
+            nextCell.setActor(this);
+            cell = nextCell;
+        }
+    }
+
     public int getHealth() {
         return health;
     }
@@ -66,15 +77,6 @@ public abstract class Actor implements Drawable {
                 inventory.add(cell.getItem());
             }
             cell.setItem(null);
-        }
-    }
-
-    public void openDoor() {
-        if (isKeyInInventory()) {
-            cell.setType(CellType.OPEN_DOOR);
-            removeKey();
-        } else {
-            cell.setActor(this);
         }
     }
 

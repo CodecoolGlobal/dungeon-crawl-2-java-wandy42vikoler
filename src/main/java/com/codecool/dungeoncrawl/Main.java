@@ -1,5 +1,6 @@
 package com.codecool.dungeoncrawl;
 
+import com.codecool.dungeoncrawl.ai.Pathfinding;
 import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
@@ -24,7 +25,9 @@ import javax.sound.sampled.Clip;
 import java.io.File;
 
 public class Main extends Application {
+
     GameMap map = MapLoader.loadMap();
+    Pathfinding pathfinder = new Pathfinding(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
             map.getHeight() * Tiles.TILE_WIDTH);
@@ -75,6 +78,7 @@ public class Main extends Application {
     }
 
     private void onKeyPressed(KeyEvent keyEvent) {
+
         switch (keyEvent.getCode()) {
             case UP:
                 map.getPlayer().move(0, -1);
@@ -92,6 +96,21 @@ public class Main extends Application {
                 map.getPlayer().move(1,0);
                 refresh();
                 break;
+        }
+        searchPath(map.getPlayer().getX(), map.getPlayer().getY());
+    }
+
+    public void searchPath(int goalX, int goalY){
+
+        int startX = map.getMonster().getX();
+        int startY = map.getMonster().getY();
+        pathfinder.setNode(startX, startY, goalX, goalY);
+
+        if(pathfinder.search()){
+            int nextX = pathfinder.pathList.get(0).x;
+            int nextY = pathfinder.pathList.get(0).y;
+
+            map.getMonster().moveMonster(nextX, nextY);
         }
     }
 
