@@ -129,7 +129,7 @@ public class Main extends Application {
                 }
             }
         }
-        healthLabel.setText("" + map.getPlayer().getHealth());
+        healthLabel.setText("" + map.getPlayer().getPlayerHealth());
         inventoryLabel.setText("" + map.getPlayer().getInventory());
     }
 

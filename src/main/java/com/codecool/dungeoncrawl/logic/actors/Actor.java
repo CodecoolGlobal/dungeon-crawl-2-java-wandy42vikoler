@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.CellType;
 import com.codecool.dungeoncrawl.logic.Drawable;
 import com.codecool.dungeoncrawl.logic.items.Item;
 import com.codecool.dungeoncrawl.logic.items.Key;
+import com.codecool.dungeoncrawl.logic.items.Sword;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -12,7 +13,8 @@ import java.util.Set;
 
 public abstract class Actor implements Drawable {
     private Cell cell;
-    private int health = 10;
+    private int playerHealth = 10;
+    private int skeletonHealth = 4;
     public Set<Item> inventory = new HashSet<>();
 
     public Actor(Cell cell) {
@@ -22,8 +24,26 @@ public abstract class Actor implements Drawable {
 
     public void move(int dx, int dy) {
         Cell nextCell = cell.getNeighbor(dx, dy);
-        if (nextCell.getType() == CellType.WALL  || nextCell.getType() == CellType.TORCH || nextCell.getType() == CellType.WINDOW ||
-                nextCell.getActor() != null) {
+        Actor actor = nextCell.getActor();
+        if (actor instanceof Skeleton){
+            if (isSwordInInventory()) {
+                playerHealth -= 2;
+                skeletonHealth -= 5;
+            }
+            else {
+                skeletonHealth -= 3;
+                playerHealth -= 2;
+            }
+            if (skeletonHealth <= 0) {
+                nextCell.setActor(null);
+                skeletonHealth = 0;
+            }
+            if (playerHealth <= 0) {
+                cell.setActor(null);
+                playerHealth = 0;
+            }
+        }
+        else if (nextCell.getType() == CellType.WALL  || nextCell.getType() == CellType.TORCH || nextCell.getType() == CellType.WINDOW) {
             cell.setActor(this);
         } else if (nextCell.getType() == CellType.CLOSED_DOOR) {
             if (isKeyInInventory()) {
@@ -49,8 +69,12 @@ public abstract class Actor implements Drawable {
         }
     }
 
-    public int getHealth() {
-        return health;
+    public int getPlayerHealth() {
+        return playerHealth;
+    }
+
+    public int getSkeletonHealth() {
+        return skeletonHealth;
     }
 
     public Cell getCell() {
@@ -72,7 +96,7 @@ public abstract class Actor implements Drawable {
     public void addItem() {
         if (cell.getItem() != null) {
             if (Objects.equals(cell.getItem().getTileName(), "potion")) {
-                health += 5;
+                playerHealth += 5;
             } else {
                 inventory.add(cell.getItem());
             }
@@ -91,7 +115,20 @@ public abstract class Actor implements Drawable {
         return result;
     }
 
+    boolean isSwordInInventory() {
+        boolean result = false;
+        for(Item item : inventory) {
+            if (item instanceof Sword) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     public void removeKey() {
         inventory.removeIf(item -> item instanceof Key);
     }
 }
+
+
