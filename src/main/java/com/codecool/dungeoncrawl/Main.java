@@ -1,15 +1,21 @@
 package com.codecool.dungeoncrawl;
 
 import com.codecool.dungeoncrawl.dao.GameDatabaseManager;
-import com.codecool.dungeoncrawl.logic.Cell;
-import com.codecool.dungeoncrawl.logic.GameMap;
-import com.codecool.dungeoncrawl.logic.MapLoader;
+import com.codecool.dungeoncrawl.ai.Pathfinding;
+import com.codecool.dungeoncrawl.dao.GameDatabaseManager;
+import com.codecool.dungeoncrawl.logic.*;
+import com.codecool.dungeoncrawl.logic.actors.Actor;
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -20,17 +26,29 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import java.io.File;
+
 import java.sql.SQLException;
 
+import static javafx.application.Platform.exit;
+
 public class Main extends Application {
+
     GameMap map = MapLoader.loadMap();
+    Pathfinding pathfinder = new Pathfinding(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
             map.getHeight() * Tiles.TILE_WIDTH);
     GraphicsContext context = canvas.getGraphicsContext2D();
     Label healthLabel = new Label();
-    GameDatabaseManager dbManager;
+    Label inventoryLabel = new Label();
 
+    Label mentorBot = new Label();
+    Label xY = new Label();
+    GameDatabaseManager dbManager;
     public static void main(String[] args) {
         launch(args);
     }
@@ -44,6 +62,54 @@ public class Main extends Application {
 
         ui.add(new Label("Health: "), 0, 0);
         ui.add(healthLabel, 1, 0);
+
+        ui.add(new Label("Inventory: "), 0, 1);
+        ui.add(inventoryLabel, 1, 1);
+
+        ui.add(new Label("MentorBot: "), 0, 10);
+        ui.add(mentorBot, 1, 10);
+
+        ui.add(new Label( "X - Y"), 0, 11);
+        ui.add(xY, 1, 11);
+
+        Button button = new Button("Pick up item");
+        ui.add(button, 0, 2);
+        button.setFocusTraversable(false);
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                map.getPlayer().addItem();
+                refresh();
+            }
+        });
+
+        Button buttonRestart = new Button("Restart");
+        ui.add(buttonRestart, 0, 3);
+        buttonRestart.setFocusTraversable(false);
+        buttonRestart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.close();
+                Platform.runLater(() -> {
+                    try {
+                        new Main().start(new Stage());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        });
+
+        Button buttonExit = new Button("Exit");
+        ui.add(buttonExit, 1, 3);
+        buttonExit.setFocusTraversable(false);
+        buttonExit.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.exit(0);
+            }
+        });
+
 
         BorderPane borderPane = new BorderPane();
 
@@ -71,6 +137,7 @@ public class Main extends Application {
     }
 
     private void onKeyPressed(KeyEvent keyEvent) {
+
         switch (keyEvent.getCode()) {
             case UP:
                 map.getPlayer().move(0, -1);
@@ -85,13 +152,42 @@ public class Main extends Application {
                 refresh();
                 break;
             case RIGHT:
-                map.getPlayer().move(1, 0);
+                map.getPlayer().move(1,0);
                 refresh();
                 break;
             case S:
                 Player player = map.getPlayer();
                 dbManager.savePlayer(player);
                 break;
+        }
+        if (map.getPlayer().getMentorBotHealth() > 0){
+            searchPath(map.getPlayer().getX(), map.getPlayer().getY());
+
+        } else {
+            map.setMonster(null);
+        }
+        if (map.getPlayer().getPlayerHealth() <= 0){
+            map = MapLoaderGameOver.loadMap();
+            refresh();
+        }
+
+        if (map.getPlayer().getX() == 2 && map.getPlayer().getY() == 17){
+            map = MapLoader2.loadMap();
+            refresh();
+        }
+    }
+
+    public void searchPath(int goalX, int goalY){
+
+        int startX = map.getMonster().getX();
+        int startY = map.getMonster().getY();
+        pathfinder.setNode(startX, startY, goalX, goalY);
+
+        if(pathfinder.search()){
+            int nextX = pathfinder.pathList.get(0).x;
+            int nextY = pathfinder.pathList.get(0).y;
+
+            map.getMonster().moveMonster(nextX, nextY);
         }
     }
 
@@ -103,12 +199,17 @@ public class Main extends Application {
                 Cell cell = map.getCell(x, y);
                 if (cell.getActor() != null) {
                     Tiles.drawTile(context, cell.getActor(), x, y);
+                } else if (cell.getItem() != null){
+                    Tiles.drawTile(context, cell.getItem(), x, y);
                 } else {
                     Tiles.drawTile(context, cell, x, y);
                 }
             }
         }
-        healthLabel.setText("" + map.getPlayer().getHealth());
+        healthLabel.setText("" + map.getPlayer().getPlayerHealth());
+        inventoryLabel.setText("" + map.getPlayer().getInventory());
+        mentorBot.setText("" + map.getPlayer().getMentorBotHealth());
+        xY.setText("" + map.getPlayer().getX() + " - " + map.getPlayer().getY());
     }
 
     private void setupDbManager() {
@@ -120,12 +221,16 @@ public class Main extends Application {
         }
     }
 
-    private void exit() {
+    public static void playSound() {
         try {
-            stop();
-        } catch (Exception e) {
-            System.exit(1);
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("dungeonmusic.wav").getAbsoluteFile());
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+        } catch(Exception e) {
+            System.out.println("Error with playing sound.");
+            e.printStackTrace();
         }
-        System.exit(0);
     }
 }
+

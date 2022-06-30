@@ -19,7 +19,7 @@ public class PlayerModel extends BaseModel {
         this.x = player.getX();
         this.y = player.getY();
 
-        this.hp = player.getHealth();
+        this.hp = player.getPlayerHealth();
 
     }
 
