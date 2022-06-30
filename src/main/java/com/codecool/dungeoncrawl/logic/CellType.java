@@ -7,7 +7,9 @@ public enum CellType {
     WINDOW("window"),
     TORCH("torch"),
     CLOSED_DOOR("closedDoor"),
-    OPEN_DOOR("openDoor");
+    OPEN_DOOR("openDoor"),
+    NEXTLEVELDOOR("nextLevelDoor");
+
 
     private final String tileName;
 

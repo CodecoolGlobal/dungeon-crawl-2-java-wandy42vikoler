@@ -4,10 +4,13 @@ import com.codecool.dungeoncrawl.ai.Pathfinding;
 import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
+import com.codecool.dungeoncrawl.logic.MapLoader2;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -35,6 +38,8 @@ public class Main extends Application {
     Label healthLabel = new Label();
     Label inventoryLabel = new Label();
 
+    Label mentorBot = new Label();
+    Label xY = new Label();
     public static void main(String[] args) {
         launch(args);
     }
@@ -51,10 +56,15 @@ public class Main extends Application {
         ui.add(new Label("Inventory: "), 0, 1);
         ui.add(inventoryLabel, 1, 1);
 
+        ui.add(new Label("MentorBot: "), 0, 10);
+        ui.add(mentorBot, 1, 10);
+
+        ui.add(new Label( "X - Y"), 0, 11);
+        ui.add(xY, 1, 11);
+
         Button button = new Button("Pick up item");
         ui.add(button, 0, 2);
         button.setFocusTraversable(false);
-
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -62,6 +72,34 @@ public class Main extends Application {
                 refresh();
             }
         });
+
+        Button buttonRestart = new Button("Restart");
+        ui.add(buttonRestart, 0, 3);
+        buttonRestart.setFocusTraversable(false);
+        buttonRestart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.close();
+                Platform.runLater(() -> {
+                    try {
+                        new Main().start(new Stage());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        });
+
+        Button buttonExit = new Button("Exit");
+        ui.add(buttonExit, 1, 3);
+        buttonExit.setFocusTraversable(false);
+        buttonExit.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.exit(0);
+            }
+        });
+
 
         BorderPane borderPane = new BorderPane();
 
@@ -97,7 +135,17 @@ public class Main extends Application {
                 refresh();
                 break;
         }
-        searchPath(map.getPlayer().getX(), map.getPlayer().getY());
+        if (map.getPlayer().getMentorBotHealth() > 0){
+            searchPath(map.getPlayer().getX(), map.getPlayer().getY());
+
+        } else {
+            map.setMonster(null);
+        }
+
+        if (map.getPlayer().getX() == 2 && map.getPlayer().getY() == 17){
+            map = MapLoader2.loadMap();
+            refresh();
+        }
     }
 
     public void searchPath(int goalX, int goalY){
@@ -131,6 +179,8 @@ public class Main extends Application {
         }
         healthLabel.setText("" + map.getPlayer().getPlayerHealth());
         inventoryLabel.setText("" + map.getPlayer().getInventory());
+        mentorBot.setText("" + map.getPlayer().getMentorBotHealth());
+        xY.setText("" + map.getPlayer().getX() + " - " + map.getPlayer().getY());
     }
 
     public static void playSound() {

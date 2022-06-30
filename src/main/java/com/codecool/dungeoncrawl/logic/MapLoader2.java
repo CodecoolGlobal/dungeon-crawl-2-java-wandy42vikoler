@@ -10,9 +10,9 @@ import com.codecool.dungeoncrawl.logic.items.Sword;
 import java.io.InputStream;
 import java.util.Scanner;
 
-public class MapLoader {
+public class MapLoader2 {
     public static GameMap loadMap() {
-        InputStream is = MapLoader.class.getResourceAsStream("/map.txt");
+        InputStream is = MapLoader2.class.getResourceAsStream("/map2.txt");
         Scanner scanner = new Scanner(is);
         int width = scanner.nextInt();
         int height = scanner.nextInt();

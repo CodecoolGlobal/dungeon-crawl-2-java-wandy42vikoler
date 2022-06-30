@@ -1,3 +1,4 @@
+25 20
 #############
 #f.........f#    ########
 #...s...s...#WWWW#f....f#
@@ -11,10 +12,19 @@
     #..#           #..#
     #..#          ##..##
   ###..####      #f....f#
-  #f.@...f#      #...§..#
+  #f.....f#      #...§..#
   #.......#      #......#
-  #####...#      #......#
-  #...#.+.#      #.m....#
-  #.p.d...#      #......#
-  #...#..f#      #f....f#
+  #.......#      #......#
+  #.....+.#      #.m....#
+  #.p.....#      #.....@l
+  #......f#      #f....f#
   #########       ######
+
+
+
+  if (map.getPlayer().getPlayerHealth() == 0){
+              GridPane gameOVer = new GridPane();
+              gameOVer.setPrefWidth(100);
+              gameOVer.setPadding(new Insets(5));
+              gameOVer.add(new Label("GAME OVER"), 0, 0);
+          }
