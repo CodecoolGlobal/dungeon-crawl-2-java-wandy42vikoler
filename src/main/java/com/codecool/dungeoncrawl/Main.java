@@ -1,10 +1,8 @@
 package com.codecool.dungeoncrawl;
 
 import com.codecool.dungeoncrawl.ai.Pathfinding;
-import com.codecool.dungeoncrawl.logic.Cell;
-import com.codecool.dungeoncrawl.logic.GameMap;
-import com.codecool.dungeoncrawl.logic.MapLoader;
-import com.codecool.dungeoncrawl.logic.MapLoader2;
+import com.codecool.dungeoncrawl.logic.*;
+import com.codecool.dungeoncrawl.logic.actors.Actor;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -140,6 +138,10 @@ public class Main extends Application {
 
         } else {
             map.setMonster(null);
+        }
+        if (map.getPlayer().getPlayerHealth() <= 0){
+            map = MapLoaderGameOver.loadMap();
+            refresh();
         }
 
         if (map.getPlayer().getX() == 2 && map.getPlayer().getY() == 17){
