@@ -2,21 +2,22 @@ package com.codecool.dungeoncrawl;
 
 import com.codecool.dungeoncrawl.dao.GameDatabaseManager;
 import com.codecool.dungeoncrawl.ai.Pathfinding;
-import com.codecool.dungeoncrawl.dao.GameDatabaseManager;
+import com.codecool.dungeoncrawl.dao.PlayerDao;
+import com.codecool.dungeoncrawl.dao.PlayerDaoJdbc;
 import com.codecool.dungeoncrawl.logic.*;
-import com.codecool.dungeoncrawl.logic.actors.Actor;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.PlayerModel;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -32,12 +33,16 @@ import javax.sound.sampled.Clip;
 import java.io.File;
 
 import java.sql.SQLException;
+import javax.sql.DataSource;
 
 import static javafx.application.Platform.exit;
 
 public class Main extends Application {
 
+
     GameMap map = MapLoader.loadMap();
+
+    String level = "1";
     Pathfinding pathfinder = new Pathfinding(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
@@ -69,7 +74,7 @@ public class Main extends Application {
         ui.add(new Label("MentorBot: "), 0, 10);
         ui.add(mentorBot, 1, 10);
 
-        ui.add(new Label( "X - Y"), 0, 11);
+        ui.add(new Label( "Level:  "), 0, 11);
         ui.add(xY, 1, 11);
 
         Button button = new Button("Pick up item");
@@ -107,6 +112,33 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 System.exit(0);
+            }
+        });
+
+        TextInputDialog saveWithName = new TextInputDialog();
+        Label playerName = new Label("enter your Name");
+        saveWithName.setHeaderText("Enter your Name:");
+
+        Button saveGameButton = new Button("Save");
+        ui.add(saveGameButton, 0, 4);
+        saveGameButton.setFocusTraversable(false);
+        saveGameButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                saveWithName.showAndWait();
+                playerName.setText(saveWithName.getEditor().getText());
+                String name = playerName.getText();
+                GameDatabaseManager savePlayer = new GameDatabaseManager();
+                savePlayer.savePlayer(name, level);
+            }
+        });
+
+        Button loadGameButton = new Button("Load");
+        ui.add(loadGameButton, 1, 4);
+        loadGameButton.setFocusTraversable(false);
+        loadGameButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
             }
         });
 
@@ -155,10 +187,6 @@ public class Main extends Application {
                 map.getPlayer().move(1,0);
                 refresh();
                 break;
-            case S:
-                Player player = map.getPlayer();
-                dbManager.savePlayer(player);
-                break;
         }
         if (map.getPlayer().getMentorBotHealth() > 0){
             searchPath(map.getPlayer().getX(), map.getPlayer().getY());
@@ -166,13 +194,14 @@ public class Main extends Application {
         } else {
             map.setMonster(null);
         }
-        if (map.getPlayer().getPlayerHealth() <= 0){
+        if (map.getPlayer().getPlayerHealth() == 0){
             map = MapLoaderGameOver.loadMap();
             refresh();
         }
 
         if (map.getPlayer().getX() == 2 && map.getPlayer().getY() == 17){
             map = MapLoader2.loadMap();
+            level = "2";
             refresh();
         }
     }
@@ -209,7 +238,7 @@ public class Main extends Application {
         healthLabel.setText("" + map.getPlayer().getPlayerHealth());
         inventoryLabel.setText("" + map.getPlayer().getInventory());
         mentorBot.setText("" + map.getPlayer().getMentorBotHealth());
-        xY.setText("" + map.getPlayer().getX() + " - " + map.getPlayer().getY());
+        xY.setText("" + level);
     }
 
     private void setupDbManager() {
